@@ -14,15 +14,20 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-app.post('/api/webhook', (req, res) => {
+app.post('/webhook', (req, res) => {
     console.log('Webhook received:', req.body);
-    const commit = req.body.head_commit;
-    if (commit) {
+    const commits = req.body.commits;
+    let emailContent = '';
+    commits.forEach(commit => {
+        emailContent += `Commit by ${commit.committer.name}:\n\n${commit.message}\n\n${commit.url}\n\n`;
+    });
+
+    if (emailContent) {
         const mailOptions = {
             from: process.env.EMAIL_SENDER,
             to: process.env.EMAIL_RECEIVER,
-            subject: `New commit to repository: ${commit.repository.name}`,
-            text: `New commit by ${commit.committer.name}:\n\n${commit.message}\n\n${commit.url}`
+            subject: `Changes made to the HTML document`,
+            text: emailContent
         };
 
         transporter.sendMail(mailOptions, (error, info) => {
@@ -34,9 +39,10 @@ app.post('/api/webhook', (req, res) => {
             res.status(200).send('Email sent: ' + info.response);
         });
     } else {
-        console.log('No commit data found.');
-        res.status(200).send('No commit data found.');
+        console.log('No relevant commit data found.');
+        res.status(200).send('No relevant commit data found.');
     }
 });
 
+// No need to listen on port as Vercel handles that
 module.exports = app;
