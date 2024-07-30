@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-app.post('/webhook', (req, res) => {
+app.post('/api/webhook', (req, res) => {
     console.log('Webhook received:', req.body);
     const commits = req.body.commits;
     let emailContent = '';
