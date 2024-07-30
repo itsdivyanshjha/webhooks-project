@@ -15,6 +15,7 @@ const transporter = nodemailer.createTransport({
 });
 
 app.post('/api/webhook', (req, res) => {
+    console.log('Webhook received:', req.body);
     const commit = req.body.head_commit;
     if (commit) {
         const mailOptions = {
@@ -26,11 +27,14 @@ app.post('/api/webhook', (req, res) => {
 
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
+                console.error('Error sending email:', error);
                 return res.status(500).send(error.toString());
             }
+            console.log('Email sent:', info.response);
             res.status(200).send('Email sent: ' + info.response);
         });
     } else {
+        console.log('No commit data found.');
         res.status(200).send('No commit data found.');
     }
 });
